@@ -1,11 +1,16 @@
 # AI Security Gateway + Operator CLI
 
-Monorepo components:
+Monorepo for a keyless-by-default LLM security stack:
 
 - `@ai-sec/gateway`: API security gateway for LLM traffic.
 - `@ai-sec/security-core`: scanning, policy, and sanitization engine.
 - `@ai-sec/redteam-runner`: adversarial regression suite.
 - `@ai-sec/cli`: interactive terminal operator console (arrow keys, ASCII UI, low typing).
+
+## Requirements
+
+- Node.js `>=22`
+- npm `>=10`
 
 ## Quick start
 
@@ -28,29 +33,51 @@ Run CLI in another terminal:
 npm run cli
 ```
 
+## No API key required
+
+You can run this project without any OpenAI/API token:
+
+- `MODEL_PROVIDER=mock` for fully local keyless operation (default).
+- `MODEL_PROVIDER=ollama` for local model runtime.
+
+Example:
+
+```bash
+MODEL_PROVIDER=ollama OLLAMA_MODEL=llama3.1:8b npm run start
+```
+
 ## Interactive CLI
 
 The CLI provides:
 
-- Arrow-key navigation + Enter to run actions
-- ASCII title screen + animated launch
-- Connection wizard (gateway connectivity + auth checks)
-- One-click security operations:
-- `Gateway health`
-- `Quick safe prompt`
-- `Injection challenge`
-- `Custom secure-chat`
-- `Context scan`
-- `Run red-team suite`
-- `Browse security events`
-- Local settings profile at `~/.ai-sec-cli/config.json`
-- Local telemetry log at `~/.ai-sec-cli/telemetry.jsonl` (toggle in settings)
+- Arrow-key navigation + Enter to run actions.
+- ASCII title screen + animated launch.
+- Connection wizard (gateway connectivity + auth checks).
+- One-click security operations: `Gateway health`, `Quick safe prompt`, `Injection challenge`, `Custom secure-chat`, `Context scan`, `Run red-team suite`, `Browse security events`.
+- Local settings profile at `~/.ai-sec-cli/config.json`.
+- Local telemetry log at `~/.ai-sec-cli/telemetry.jsonl` (toggle in settings).
 
 Environment overrides:
 
 ```bash
 GATEWAY_URL=http://127.0.0.1:8080 npm run cli
 SERVICE_API_TOKEN=token-analyst npm run cli
+AI_SEC_CLI_TELEMETRY=off npm run cli
+```
+
+## Install CLI from a release artifact
+
+1. Download `ai-sec-cli-<version>.tgz` from GitHub Releases.
+2. Install globally:
+
+```bash
+npm install -g ./ai-sec-cli-<version>.tgz
+```
+
+3. Run:
+
+```bash
+ai-sec
 ```
 
 ## Auth model (hardened default)
@@ -61,20 +88,9 @@ SERVICE_API_TOKEN=token-analyst npm run cli
 
 Roles:
 
-- `ingest`: context scan + secure-chat calls
-- `analyst`: ingest + security event browsing
-- `admin`: analyst-level access (reserved for stricter admin routes later)
-
-## Model providers
-
-- `MODEL_PROVIDER=mock` for keyless local operation
-- `MODEL_PROVIDER=ollama` for local model runtime
-
-Example:
-
-```bash
-MODEL_PROVIDER=ollama OLLAMA_MODEL=llama3.1:8b npm run start
-```
+- `ingest`: context scan + secure-chat calls.
+- `analyst`: ingest + security event browsing.
+- `admin`: analyst-level access (reserved for stricter admin routes later).
 
 ## Endpoints
 
@@ -148,3 +164,8 @@ CI release automation:
 
 - push tag `v*` to trigger `.github/workflows/release.yml`
 - artifacts are uploaded and attached to GitHub Release
+
+## Security and disclosure
+
+- See `SECURITY.md` for vulnerability reporting policy.
+- Use `OPEN_SOURCE_CHECKLIST.md` before each public release.
