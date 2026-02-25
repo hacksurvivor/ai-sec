@@ -162,18 +162,18 @@ Integration docs:
 
 This repo includes installable skills to make ai-sec usage easier for coding agents:
 
-- `skills/ai-sec-agent-guard`: preflight prompt/tool gating.
-- `skills/ai-sec-setup-integrations`: install Claude/Codex integrations.
-- `skills/ai-sec-security-ops`: health checks, red-team runs, event triage.
+- `skills/ai-sec-gatekeeper`: preflight prompt/tool gating.
+- `skills/ai-sec-bootstrap`: install Claude/Codex integrations.
+- `skills/ai-sec-ops-center`: health checks, red-team runs, event triage.
 
 Install all 3 skills into Codex:
 
 ```bash
 python "$HOME/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py" \
   --repo hacksurvivor/ai-sec \
-  --path skills/ai-sec-agent-guard \
-  --path skills/ai-sec-setup-integrations \
-  --path skills/ai-sec-security-ops
+  --path skills/ai-sec-gatekeeper \
+  --path skills/ai-sec-bootstrap \
+  --path skills/ai-sec-ops-center
 ```
 
 After install, restart Codex to load new skills.

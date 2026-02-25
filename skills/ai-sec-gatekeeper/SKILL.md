@@ -1,9 +1,9 @@
 ---
-name: ai-sec-agent-guard
+name: ai-sec-gatekeeper
 description: Use when a user asks to run prompts or tool actions through ai-sec before execution (for example: "guard this prompt", "gate tool calls", "run safely", "agent-first security", "preflight this task"). This skill performs ai-sec preflight gating and enforces allow/review/block exit codes.
 ---
 
-# AI-Sec Agent Guard
+# AI-Sec Gatekeeper
 
 Use this skill to preflight an agent request before any high-impact action.
 

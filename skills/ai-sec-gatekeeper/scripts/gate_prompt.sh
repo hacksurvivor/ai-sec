@@ -9,7 +9,7 @@ if [[ -z "${prompt//[$' \t\r\n']/}" && ! -t 0 ]]; then
 fi
 
 if [[ -z "${prompt//[$' \t\r\n']/}" ]]; then
-  echo "ai-sec-agent-guard: prompt is required" >&2
+  echo "ai-sec-gatekeeper: prompt is required" >&2
   echo "usage: gate_prompt.sh \"<prompt>\" [tool ...]" >&2
   exit 1
 fi

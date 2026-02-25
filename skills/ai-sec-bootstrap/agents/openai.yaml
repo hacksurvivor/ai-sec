@@ -1,4 +1,4 @@
 interface:
-  display_name: "AI-Sec Setup Integrations"
+  display_name: "AI-Sec Bootstrap"
   short_description: "Install Claude/Codex ai-sec integrations"
   default_prompt: "Set up ai-sec integrations for my coding agent CLI environment."

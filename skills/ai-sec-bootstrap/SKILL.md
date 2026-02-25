@@ -1,9 +1,9 @@
 ---
-name: ai-sec-setup-integrations
+name: ai-sec-bootstrap
 description: Use when the user asks to install or configure ai-sec for coding agents (for example: Claude hooks, Codex wrapper, agent-first setup, local integration install). This skill installs and verifies ai-sec integrations for Claude Code and Codex CLI.
 ---
 
-# AI-Sec Setup Integrations
+# AI-Sec Bootstrap
 
 Use this skill to install ai-sec integrations for agent CLIs with minimal manual steps.
 

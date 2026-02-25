@@ -1,9 +1,9 @@
 ---
-name: ai-sec-security-ops
+name: ai-sec-ops-center
 description: Use when the user asks to operate, validate, or monitor ai-sec (for example: check gateway health, run red-team suite, inspect security events, or validate policy behavior). This skill runs deterministic ai-sec operations via helper scripts.
 ---
 
-# AI-Sec Security Ops
+# AI-Sec Ops Center
 
 Use this skill for operator-style security checks and regression runs.
 
