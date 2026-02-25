@@ -139,6 +139,24 @@ AI_SEC_CONFIRMED_TOOLS="terminal.exec,write_file" \
   ./examples/agent-guard.sh "Apply the approved edit" terminal.exec write_file
 ```
 
+## AI coding CLI integrations
+
+Prebuilt installers:
+
+```bash
+# Claude Code native hooks (UserPromptSubmit + PreToolUse)
+bash ./examples/integrations/claude/install.sh
+
+# Codex wrapper for guarded `codex exec` runs
+bash ./examples/integrations/codex/install.sh
+```
+
+Integration docs:
+
+- `examples/integrations/README.md`
+- `examples/integrations/claude/README.md`
+- `examples/integrations/codex/README.md`
+
 ## Auth model (hardened default)
 
 - Default `AUTH_MODE` is `required`.
