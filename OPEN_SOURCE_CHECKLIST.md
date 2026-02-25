@@ -45,7 +45,7 @@ Commands:
 ```bash
 npm run release:cli:pack
 npm run release:cli:checksums
-tar -tzf release/ai-sec-cli-*.tgz
+tar -tzf release/codegrammer-ai-sec-cli-*.tgz
 ```
 
 ## 4) Tag and publish

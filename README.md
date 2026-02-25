@@ -5,7 +5,7 @@ Monorepo for a keyless-by-default LLM security stack:
 - `@ai-sec/gateway`: API security gateway for LLM traffic.
 - `@ai-sec/security-core`: scanning, policy, and sanitization engine.
 - `@ai-sec/redteam-runner`: adversarial regression suite.
-- `@ai-sec/cli`: interactive terminal operator console (arrow keys, ASCII UI, low typing).
+- `@codegrammer/ai-sec-cli`: interactive terminal operator console (arrow keys, ASCII UI, low typing).
 
 ## Requirements
 
@@ -67,11 +67,11 @@ AI_SEC_CLI_TELEMETRY=off npm run cli
 
 ## Install CLI from a release artifact
 
-1. Download `ai-sec-cli-<version>.tgz` from GitHub Releases.
+1. Download `codegrammer-ai-sec-cli-<version>.tgz` from GitHub Releases.
 2. Install globally:
 
 ```bash
-npm install -g ./ai-sec-cli-<version>.tgz
+npm install -g ./codegrammer-ai-sec-cli-<version>.tgz
 ```
 
 3. Run:
@@ -120,7 +120,7 @@ npm run test --workspace @ai-sec/gateway
 CLI scripted flow tests:
 
 ```bash
-npm run test --workspace @ai-sec/cli
+npm run test --workspace @codegrammer/ai-sec-cli
 ```
 
 Red-team gate:
