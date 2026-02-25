@@ -120,6 +120,18 @@ if ! echo "$prompt" | ai-sec agent gate --stdin --tool terminal.exec; then
 fi
 ```
 
+Reusable guard script:
+
+```bash
+./examples/agent-guard.sh "List repository files" terminal.exec
+```
+
+or
+
+```bash
+echo "Refactor this file safely" | ./examples/agent-guard.sh "" terminal.exec write_file
+```
+
 ## Auth model (hardened default)
 
 - Default `AUTH_MODE` is `required`.
