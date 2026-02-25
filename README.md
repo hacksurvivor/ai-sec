@@ -235,6 +235,11 @@ Default behavior is autonomous:
 
 - `review/challenge` from gateway can continue (`reviewBypassed=true`).
 - Set `reviewMode: "human_approval"` to require explicit approval.
+- Local `executionFirewall` is enabled by default (`mode: "enforce"`).
+- Canary leak sentinel is enabled by default (`canary.mode: "enforce"`).
+- Autonomy budget control is enabled by default (`autonomyBudget.mode: "enforce"`).
+- Context shield is enabled by default (`contextShield.mode: "enforce"`).
+- Decision receipt chain is enabled by default (`decisionReceipt.enabled: true`).
 
 Example adapter usage:
 
@@ -244,12 +249,37 @@ import { OpenClawAiSecAdapter } from "@codegrammer/ai-sec-openclaw-adapter";
 const guard = new OpenClawAiSecAdapter({
   baseUrl: process.env.AI_SEC_GATEWAY_URL ?? "http://127.0.0.1:8080",
   token: process.env.AI_SEC_BEARER_TOKEN,
-  reviewMode: "autonomous"
+  reviewMode: "autonomous",
+  executionFirewall: {
+    mode: "enforce"
+  },
+  canary: {
+    mode: "enforce"
+  },
+  autonomyBudget: {
+    mode: "enforce",
+    maxReviewBypass: 5,
+    maxCumulativeRisk: 220,
+    maxSingleBypassRisk: 74,
+    windowMs: 10 * 60 * 1000
+  },
+  contextShield: {
+    mode: "enforce"
+  },
+  decisionReceipt: {
+    enabled: true,
+    chain: true,
+    includeInputHashes: true
+  }
 });
+
+const canaryToken = guard.getPrimaryCanaryToken();
+// Put canaryToken in hidden system context/tool memory.
 
 const decision = await guard.gate({
   prompt: userPrompt,
-  tools: [toolName]
+  tools: [toolName],
+  toolExecutions: [{ tool: toolName, input: toolInput }]
 });
 
 if (!decision.allowed) {

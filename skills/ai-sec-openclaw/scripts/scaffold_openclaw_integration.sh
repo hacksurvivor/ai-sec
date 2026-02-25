@@ -53,17 +53,42 @@ import { OpenClawAiSecAdapter } from "@codegrammer/ai-sec-openclaw-adapter";
 const guard = new OpenClawAiSecAdapter({
   baseUrl: process.env.AI_SEC_GATEWAY_URL ?? "http://127.0.0.1:8080",
   token: process.env.AI_SEC_BEARER_TOKEN,
-  reviewMode: "autonomous"
+  reviewMode: "autonomous",
+  executionFirewall: {
+    mode: "enforce"
+  },
+  canary: {
+    mode: "enforce"
+  },
+  autonomyBudget: {
+    mode: "enforce",
+    maxReviewBypass: 5,
+    maxCumulativeRisk: 220,
+    maxSingleBypassRisk: 74,
+    windowMs: 10 * 60 * 1000
+  },
+  contextShield: {
+    mode: "enforce"
+  },
+  decisionReceipt: {
+    enabled: true,
+    chain: true,
+    includeInputHashes: true
+  }
 });
+
+export const OPENCLAW_CANARY_TOKEN = guard.getPrimaryCanaryToken();
 
 export async function guardOpenClawTool(params: {
   prompt: string;
   toolName: string;
+  toolInput?: unknown;
   execute: () => Promise<unknown>;
 }): Promise<unknown> {
   const decision = await guard.gate({
     prompt: params.prompt,
-    tools: [params.toolName]
+    tools: [params.toolName],
+    toolExecutions: [{ tool: params.toolName, input: params.toolInput }]
   });
 
   if (!decision.allowed) {
@@ -82,8 +107,31 @@ import { OpenClawAiSecAdapter, type AiSecReviewRequest } from "@codegrammer/ai-s
 const guard = new OpenClawAiSecAdapter({
   baseUrl: process.env.AI_SEC_GATEWAY_URL ?? "http://127.0.0.1:8080",
   token: process.env.AI_SEC_BEARER_TOKEN,
-  reviewMode: "human_approval"
+  reviewMode: "human_approval",
+  executionFirewall: {
+    mode: "enforce"
+  },
+  canary: {
+    mode: "enforce"
+  },
+  autonomyBudget: {
+    mode: "enforce",
+    maxReviewBypass: 5,
+    maxCumulativeRisk: 220,
+    maxSingleBypassRisk: 74,
+    windowMs: 10 * 60 * 1000
+  },
+  contextShield: {
+    mode: "enforce"
+  },
+  decisionReceipt: {
+    enabled: true,
+    chain: true,
+    includeInputHashes: true
+  }
 });
+
+export const OPENCLAW_CANARY_TOKEN = guard.getPrimaryCanaryToken();
 
 async function askUserApproval(_review: AiSecReviewRequest): Promise<boolean> {
   // TODO: wire this to your OpenClaw approval UX/channel.
@@ -93,12 +141,14 @@ async function askUserApproval(_review: AiSecReviewRequest): Promise<boolean> {
 export async function guardOpenClawTool(params: {
   prompt: string;
   toolName: string;
+  toolInput?: unknown;
   execute: () => Promise<unknown>;
 }): Promise<unknown> {
   const decision = await guard.gate(
     {
       prompt: params.prompt,
-      tools: [params.toolName]
+      tools: [params.toolName],
+      toolExecutions: [{ tool: params.toolName, input: params.toolInput }]
     },
     async (review) => {
       const approved = await askUserApproval(review);

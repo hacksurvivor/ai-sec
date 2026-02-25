@@ -17,8 +17,13 @@ Run when the user asks to protect OpenClaw tool execution or prompt flow with ai
 2. Choose review mode:
    - `autonomous` (default): continue on `review/challenge`.
    - `human_approval`: require approval callback before re-gating.
-3. Wire generated helper around each sensitive tool execution path.
-4. Run a gate sanity check using `ai-sec agent gate`.
+3. Keep local execution firewall enabled (`executionFirewall.mode: "enforce"`) unless explicitly requested otherwise.
+4. Keep canary sentinel enabled (`canary.mode: "enforce"`), and place `OPENCLAW_CANARY_TOKEN` in hidden system context/tool memory.
+5. Keep autonomy budget enabled (`autonomyBudget.mode: "enforce"`) to cap autonomous review bypass volume/risk.
+6. Keep context shield enabled (`contextShield.mode: "enforce"`) to quarantine suspicious external/unknown context chunks.
+7. Keep decision receipts enabled (`decisionReceipt.enabled: true`) for tamper-evident audit chaining.
+8. Wire generated helper around each sensitive tool execution path and pass `toolInput` where available.
+9. Run a gate sanity check using `ai-sec agent gate`.
 
 ## Commands
 
