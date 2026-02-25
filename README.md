@@ -7,6 +7,74 @@ Monorepo for a keyless-by-default LLM security stack:
 - `@ai-sec/redteam-runner`: adversarial regression suite.
 - `@codegrammer/ai-sec-cli`: interactive terminal operator console (arrow keys, ASCII UI, low typing).
 
+## What It's For
+
+`ai-sec` is a security control layer for coding agents.
+
+- It inspects prompts, context, and tool requests before execution.
+- It returns deterministic decisions: `allow`, `review/challenge`, or `block`.
+- It helps reduce prompt injection impact and unsafe tool usage in agent workflows.
+
+## 60-second quickstart
+
+```bash
+cd /path/to/ai-sec
+npm install
+npm run build
+
+# terminal 1: run gateway
+AUTH_MODE=required \
+SERVICE_API_TOKENS="token-analyst:analyst" \
+npm run start
+
+# terminal 2: run a gated request
+node apps/cli/dist/index.js agent gate \
+  --prompt "List repository files safely" \
+  --tool terminal.exec \
+  --base-url http://127.0.0.1:8080 \
+  --token token-analyst \
+  --pretty
+```
+
+Exit codes:
+
+- `0`: proceed
+- `20`: human review required
+- `30`: blocked
+- `1`: transport/validation error
+
+## Agent integration flow
+
+```mermaid
+flowchart LR
+  U["User Request"] --> A["Agent (Codex or Claude)"]
+  A --> G["ai-sec gateway (/v1/agent/gate)"]
+  G --> D{"Decision"}
+  D -->|allow| E["Execute approved tools"]
+  D -->|review/challenge| H["Pause for human confirmation"]
+  D -->|block| B["Deny execution and report reason"]
+```
+
+## Copy-paste setup for coding agents
+
+Codex wrapper:
+
+```bash
+bash ./examples/integrations/codex/install.sh
+export AI_SEC_GATEWAY_URL="http://127.0.0.1:8080"
+export AI_SEC_BEARER_TOKEN="token-analyst"
+codex-ai-sec --prompt "Refactor this file safely" --tool terminal.exec
+```
+
+Claude native hooks:
+
+```bash
+bash ./examples/integrations/claude/install.sh
+export AI_SEC_GATEWAY_URL="http://127.0.0.1:8080"
+export AI_SEC_BEARER_TOKEN="token-analyst"
+export AI_SEC_FAIL_CLOSED=1
+```
+
 ## Requirements
 
 - Node.js `>=22`
