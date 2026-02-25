@@ -363,8 +363,20 @@ Smoke transcript with real command output is in `docs/SMOKE_DEMO.md`.
 Policy file:
 
 - `policy/policy.yaml`
+- `policy/policy.default.yaml` (baseline)
+- `policy/policy.strict.yaml` (hardened)
 
 The gateway reloads this policy automatically based on file mtime.
+
+Switch profiles:
+
+```bash
+# baseline profile
+bash ./policy/use_default.sh
+
+# strict profile
+bash ./policy/use_strict.sh
+```
 
 ## Testing
 

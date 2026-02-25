@@ -7,7 +7,7 @@ weights:
 
 thresholds:
   sanitize_min: 20
-  challenge_min: 20
+  challenge_min: 40
   block_min: 70
   high_risk_tool_human_review_min: 40
   critical_block_floor: 85
@@ -52,14 +52,14 @@ rules:
   - id: model_duping_authority
     pattern: \b(according\s+to\s+company\s+policy|for\s+safety\s+and\s+compliance\s+reasons|admin\s+override|OpenAI\s+employee)\b
     flags: i
-    score: 50
+    score: 45
     reason: Authority/duping pattern detected
     scope: all
 
   - id: token_smuggling_hint
     pattern: \b(base64|encode\s+your\s+response|reverse\s+the\s+text|put\s+spaces\s+between\s+letters)\b
     flags: i
-    score: 65
+    score: 55
     reason: Obfuscation/token-smuggling hint detected
     scope: input
 
@@ -89,22 +89,6 @@ rules:
   - id: indirect_bracket_instruction
     pattern: \[\[[^\]]{8,}\]\]|\[[^\]]{12,}\]
     flags: i
-    score: 50
+    score: 40
     reason: Bracketed hidden instruction pattern detected
     scope: all
-
-  - id: direct_override_spanish
-    pattern: \b(ignora|ignore)\s+(todas?\s+)?las?\s+instrucciones?\s+(anteriores|previas)\b
-    flags: i
-    score: 95
-    reason: Spanish direct override instruction detected
-    scope: all
-    critical: true
-
-  - id: direct_override_russian
-    pattern: (?:^|\s)игнорируй\s+(?:все\s+)?предыдущ\S*\s+инструкц\S*
-    flags: i
-    score: 95
-    reason: Russian direct override instruction detected
-    scope: all
-    critical: true
