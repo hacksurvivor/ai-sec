@@ -1,0 +1,89 @@
+version: 1
+
+weights:
+  input: 0.5
+  context: 0.4
+  output: 0.1
+
+thresholds:
+  sanitize_min: 20
+  challenge_min: 40
+  block_min: 70
+  high_risk_tool_human_review_min: 40
+  critical_block_floor: 85
+
+high_risk_tools:
+  - send_email
+  - send_payment
+  - wire_transfer
+  - update_permissions
+  - delete_user
+  - execute_sql
+  - webhook_post
+
+rules:
+  - id: direct_override
+    pattern: ignore\s+(all|any|the)\s+previous\s+instructions
+    flags: i
+    score: 85
+    reason: Direct override instruction detected
+    scope: all
+    critical: true
+
+  - id: jailbreak_dan
+    pattern: \b(do\s+anything\s+now|\bDAN\b|jailbreak)\b
+    flags: i
+    score: 65
+    reason: Jailbreak pattern detected
+    scope: input
+
+  - id: roleplay_bypass
+    pattern: \b(role\s*play|pretend\s+you\s+are|act\s+as\s+if)\b
+    flags: i
+    score: 30
+    reason: Role-play prompt pattern detected
+    scope: input
+
+  - id: model_duping_authority
+    pattern: \b(according\s+to\s+company\s+policy|for\s+safety\s+and\s+compliance\s+reasons|admin\s+override|OpenAI\s+employee)\b
+    flags: i
+    score: 45
+    reason: Authority/duping pattern detected
+    scope: all
+
+  - id: token_smuggling_hint
+    pattern: \b(base64|encode\s+your\s+response|reverse\s+the\s+text|put\s+spaces\s+between\s+letters)\b
+    flags: i
+    score: 55
+    reason: Obfuscation/token-smuggling hint detected
+    scope: input
+
+  - id: html_script_payload
+    pattern: (<script|onerror\s*=|onload\s*=|<svg[^>]*>|javascript:)
+    flags: i
+    score: 95
+    reason: Executable HTML/script payload detected
+    scope: all
+    critical: true
+
+  - id: tracking_pixel
+    pattern: '!\[[^\]]*\]\(https?:\/\/[^)]+\?(?:[^)]*(?:msg|message|q|text)=)[^)]+\)'
+    flags: i
+    score: 90
+    reason: Potential tracking pixel data exfil pattern
+    scope: output
+    critical: true
+
+  - id: suspicious_url
+    pattern: \b(?:https?:\/\/)?(?:bit\.ly|tinyurl\.com|t\.co|rebrand\.ly)\/
+    flags: i
+    score: 25
+    reason: Suspicious short-link detected
+    scope: all
+
+  - id: indirect_bracket_instruction
+    pattern: \[\[[^\]]{8,}\]\]|\[[^\]]{12,}\]
+    flags: i
+    score: 40
+    reason: Bracketed hidden instruction pattern detected
+    scope: all

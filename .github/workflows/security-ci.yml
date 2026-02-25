@@ -1,0 +1,39 @@
+name: Security CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "**"
+
+jobs:
+  build-and-redteam:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build workspaces
+        run: npm run build
+
+      - name: Lint types
+        run: npm run lint
+
+      - name: Run gateway integration tests
+        run: npm run test --workspace @ai-sec/gateway
+
+      - name: Run CLI flow tests
+        run: npm run test --workspace @ai-sec/cli
+
+      - name: Run red-team suite gate
+        run: npm run redteam -- --suite prompt_injection_core --minDetectionRate 0.9 --maxSuccessfulAttacks 3 --json
