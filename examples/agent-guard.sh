@@ -23,6 +23,16 @@ for tool in "$@"; do
   tool_args+=(--tool "$tool")
 done
 
+if [[ -n "${AI_SEC_CONFIRMED_TOOLS:-}" ]]; then
+  IFS=',' read -r -a confirmed_tools <<< "$AI_SEC_CONFIRMED_TOOLS"
+  for tool in "${confirmed_tools[@]}"; do
+    trimmed="$(echo "$tool" | xargs)"
+    if [[ -n "$trimmed" ]]; then
+      tool_args+=(--confirmed-tool "$trimmed")
+    fi
+  done
+fi
+
 set +e
 result="$(printf "%s" "$prompt" | ai-sec agent gate --stdin "${tool_args[@]}" --pretty)"
 code=$?

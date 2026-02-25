@@ -132,6 +132,13 @@ or
 echo "Refactor this file safely" | ./examples/agent-guard.sh "" terminal.exec write_file
 ```
 
+After user approval, pass confirmed tools:
+
+```bash
+AI_SEC_CONFIRMED_TOOLS="terminal.exec,write_file" \
+  ./examples/agent-guard.sh "Apply the approved edit" terminal.exec write_file
+```
+
 ## Auth model (hardened default)
 
 - Default `AUTH_MODE` is `required`.
