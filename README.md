@@ -5,6 +5,7 @@ Monorepo for a keyless-by-default LLM security stack:
 - `@ai-sec/gateway`: API security gateway for LLM traffic.
 - `@ai-sec/security-core`: scanning, policy, and sanitization engine.
 - `@ai-sec/redteam-runner`: adversarial regression suite.
+- `@ai-sec/openclaw-adapter`: OpenClaw-friendly guard with autonomous-by-default review handling.
 - `@codegrammer/ai-sec-cli`: interactive terminal operator console (arrow keys, ASCII UI, low typing).
 
 ## What It's For
@@ -225,6 +226,41 @@ Integration docs:
 - `examples/integrations/claude/README.md`
 - `examples/integrations/codex/README.md`
 - `docs/SMOKE_DEMO.md` (live run transcript)
+
+## OpenClaw integration
+
+`@ai-sec/openclaw-adapter` enables direct OpenClaw bot integration with optional human approval.
+
+Default behavior is autonomous:
+
+- `review/challenge` from gateway can continue (`reviewBypassed=true`).
+- Set `reviewMode: "human_approval"` to require explicit approval.
+
+Example adapter usage:
+
+```ts
+import { OpenClawAiSecAdapter } from "@ai-sec/openclaw-adapter";
+
+const guard = new OpenClawAiSecAdapter({
+  baseUrl: process.env.AI_SEC_GATEWAY_URL ?? "http://127.0.0.1:8080",
+  token: process.env.AI_SEC_BEARER_TOKEN,
+  reviewMode: "autonomous"
+});
+
+const decision = await guard.gate({
+  prompt: userPrompt,
+  tools: [toolName]
+});
+
+if (!decision.allowed) {
+  throw new Error(`Blocked by ai-sec: ${decision.gatewayDecision}`);
+}
+```
+
+More details:
+
+- `docs/OPENCLAW_ADAPTER.md`
+- `examples/openclaw/openclaw-ai-sec-example.ts`
 
 ## Skill pack for LLMs
 

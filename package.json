@@ -8,13 +8,13 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspace @ai-sec/security-core && npm run build --workspace @ai-sec/redteam-runner && npm run build --workspace @ai-sec/gateway && npm run build --workspace @codegrammer/ai-sec-cli",
+    "build": "npm run build --workspace @ai-sec/security-core && npm run build --workspace @ai-sec/redteam-runner && npm run build --workspace @ai-sec/openclaw-adapter && npm run build --workspace @ai-sec/gateway && npm run build --workspace @codegrammer/ai-sec-cli",
     "dev": "npm run build --workspace @ai-sec/security-core && npm run build --workspace @ai-sec/redteam-runner && npm run dev --workspace @ai-sec/gateway",
     "start": "npm run start --workspace @ai-sec/gateway",
     "cli": "npm run dev --workspace @codegrammer/ai-sec-cli",
     "cli:dev": "npm run dev --workspace @codegrammer/ai-sec-cli",
     "test": "npm run test -ws",
-    "lint": "npm run lint --workspace @ai-sec/security-core && npm run lint --workspace @ai-sec/redteam-runner && npm run lint --workspace @ai-sec/gateway && npm run lint --workspace @codegrammer/ai-sec-cli",
+    "lint": "npm run lint --workspace @ai-sec/security-core && npm run lint --workspace @ai-sec/redteam-runner && npm run lint --workspace @ai-sec/openclaw-adapter && npm run lint --workspace @ai-sec/gateway && npm run lint --workspace @codegrammer/ai-sec-cli",
     "redteam": "npm run redteam --workspace @ai-sec/redteam-runner --",
     "release:verify": "npm run build && npm run lint && npm run test --workspace @ai-sec/gateway && npm run test --workspace @codegrammer/ai-sec-cli && npm run redteam -- --suite prompt_injection_core --target-model release-check-model",
     "release:cli:pack": "mkdir -p release && npm pack --workspace @codegrammer/ai-sec-cli --pack-destination ./release",
