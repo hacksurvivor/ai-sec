@@ -3,7 +3,7 @@ import { logger } from "./logger.js";
 
 export interface SecurityEventRecord {
   eventId: string;
-  eventType: "secure_chat" | "redteam_run" | "context_scan";
+  eventType: "secure_chat" | "redteam_run" | "context_scan" | "agent_gate";
   sessionId?: string;
   userId?: string;
   model?: string;
@@ -32,7 +32,7 @@ export interface SecurityEventView {
 
 interface ListOptions {
   limit: number;
-  eventType?: "secure_chat" | "redteam_run" | "context_scan";
+  eventType?: "secure_chat" | "redteam_run" | "context_scan" | "agent_gate";
   decision?: string;
 }
 

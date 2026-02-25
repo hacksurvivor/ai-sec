@@ -101,6 +101,31 @@ interface SecurityEventDetailResponse {
   };
 }
 
+interface AgentGateResponse {
+  decision: string;
+  risk_score: number;
+  signals: string[];
+  blocked_tools: string[];
+  challenge_required: boolean;
+  event_id: string;
+}
+
+type AgentDecisionClass = "allow" | "review" | "block";
+
+interface AgentCliOptions {
+  command: "gate";
+  prompt?: string;
+  readPromptFromStdin: boolean;
+  requestedTools: string[];
+  userConfirmedTools: string[];
+  contexts: string[];
+  sessionId?: string;
+  userId?: string;
+  baseUrl?: string;
+  token?: string;
+  pretty: boolean;
+}
+
 interface ApiResult<T> {
   status: number;
   payload: T;
@@ -125,6 +150,10 @@ const COLOR_DIVIDER = chalk.gray("-".repeat(86));
 const CONFIG_DIR = path.join(homedir(), ".ai-sec-cli");
 const CONFIG_FILE = path.join(CONFIG_DIR, "config.json");
 const TELEMETRY_FILE = path.join(CONFIG_DIR, "telemetry.jsonl");
+const AGENT_EXIT_ALLOW = 0;
+const AGENT_EXIT_ERROR = 1;
+const AGENT_EXIT_REVIEW = 20;
+const AGENT_EXIT_BLOCK = 30;
 
 function normalizeBaseUrl(value: string): string {
   return value.trim().replace(/\/+$/, "");
@@ -353,6 +382,63 @@ async function requestJson<T>(state: CliState, pathName: string, options: Reques
     spinner.fail(`Request failed for ${pathName}`);
     throw error;
   }
+}
+
+async function requestJsonQuiet<T>(state: CliState, pathName: string, options: RequestJsonOptions = {}): Promise<ApiResult<T>> {
+  const url = `${normalizeBaseUrl(state.baseUrl)}${pathName}`;
+  const allowedStatuses = new Set(options.allowedStatuses ?? []);
+  const started = Date.now();
+
+  try {
+    const headers = createHeaders(state, options.headers, Boolean(options.body));
+    const response = await fetch(url, {
+      ...options,
+      headers
+    });
+
+    const rawBody = await response.text();
+    let payload: unknown = undefined;
+    if (rawBody.length > 0) {
+      try {
+        payload = JSON.parse(rawBody);
+      } catch {
+        payload = rawBody;
+      }
+    }
+
+    await trackTelemetry(state, "api_call", {
+      path: pathName,
+      status: response.status,
+      latency_ms: Date.now() - started
+    });
+
+    if (!response.ok && !allowedStatuses.has(response.status)) {
+      throw new HttpError(`Request failed with status ${response.status}`, response.status, payload);
+    }
+
+    return {
+      status: response.status,
+      payload: payload as T
+    };
+  } catch (error) {
+    await trackTelemetry(state, "api_error", {
+      path: pathName,
+      message: error instanceof Error ? error.message : String(error)
+    });
+    throw error;
+  }
+}
+
+function classifyAgentDecision(decision: string): AgentDecisionClass {
+  if (["block", "fail", "quarantine"].includes(decision)) {
+    return "block";
+  }
+
+  if (["challenge", "human_review"].includes(decision)) {
+    return "review";
+  }
+
+  return "allow";
 }
 
 function logHttpError(error: unknown): void {
@@ -702,6 +788,7 @@ async function runHelp(): Promise<void> {
   console.log(chalk.gray("- This CLI can store API tokens at ~/.ai-sec-cli/config.json (chmod 600)."));
   console.log(chalk.gray("- Local telemetry writes to ~/.ai-sec-cli/telemetry.jsonl when enabled."));
   console.log(chalk.gray("- For production, run gateway with AUTH_MODE=required and strong SERVICE_API_TOKENS."));
+  console.log(chalk.gray("- Agent-first mode: ai-sec agent gate --stdin --tool <name>"));
 }
 
 async function runConnectionWizard(state: CliState): Promise<void> {
@@ -981,6 +1068,124 @@ function resolveTelemetryFlag(persisted: PersistedCliConfig): boolean {
   return persisted.telemetryEnabled ?? true;
 }
 
+async function readStdinText(): Promise<string> {
+  const chunks: Buffer[] = [];
+  for await (const chunk of process.stdin) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
+  }
+  return Buffer.concat(chunks).toString("utf8");
+}
+
+function parseAgentOptions(argv: string[]): AgentCliOptions {
+  const options: AgentCliOptions = {
+    command: "gate",
+    readPromptFromStdin: false,
+    requestedTools: [],
+    userConfirmedTools: [],
+    contexts: [],
+    pretty: false
+  };
+
+  const args = [...argv];
+  if (args[0] === "gate") {
+    args.shift();
+  } else if (args[0] && !args[0].startsWith("-")) {
+    throw new Error(`Unknown agent command: ${args[0]}. Supported: gate`);
+  }
+
+  while (args.length > 0) {
+    const arg = args.shift() as string;
+
+    const requireValue = (flag: string): string => {
+      const next = args.shift();
+      if (!next) {
+        throw new Error(`Missing value for ${flag}`);
+      }
+      return next;
+    };
+
+    if (arg === "--help" || arg === "-h") {
+      throw new Error("HELP");
+    }
+
+    if (arg === "--prompt") {
+      options.prompt = requireValue("--prompt");
+      continue;
+    }
+
+    if (arg === "--stdin") {
+      options.readPromptFromStdin = true;
+      continue;
+    }
+
+    if (arg === "--tool") {
+      options.requestedTools.push(requireValue("--tool"));
+      continue;
+    }
+
+    if (arg === "--confirmed-tool") {
+      options.userConfirmedTools.push(requireValue("--confirmed-tool"));
+      continue;
+    }
+
+    if (arg === "--context") {
+      options.contexts.push(requireValue("--context"));
+      continue;
+    }
+
+    if (arg === "--session-id") {
+      options.sessionId = requireValue("--session-id");
+      continue;
+    }
+
+    if (arg === "--user-id") {
+      options.userId = requireValue("--user-id");
+      continue;
+    }
+
+    if (arg === "--base-url") {
+      options.baseUrl = normalizeBaseUrl(requireValue("--base-url"));
+      continue;
+    }
+
+    if (arg === "--token") {
+      options.token = requireValue("--token");
+      continue;
+    }
+
+    if (arg === "--pretty") {
+      options.pretty = true;
+      continue;
+    }
+
+    throw new Error(`Unknown flag: ${arg}`);
+  }
+
+  return options;
+}
+
+function printAgentHelp(): void {
+  console.log("ai-sec agent gate [options]");
+  console.log("");
+  console.log("Options:");
+  console.log("  --prompt <text>            Prompt to evaluate");
+  console.log("  --stdin                    Read prompt from stdin");
+  console.log("  --tool <name>              Requested tool (repeatable)");
+  console.log("  --confirmed-tool <name>    User-confirmed tool (repeatable)");
+  console.log("  --context <text>           Context chunk text (repeatable)");
+  console.log("  --session-id <id>          Session identifier override");
+  console.log("  --user-id <id>             User identifier override");
+  console.log("  --base-url <url>           Gateway URL override");
+  console.log("  --token <bearer>           Bearer token override");
+  console.log("  --pretty                   Pretty-print JSON output");
+  console.log("");
+  console.log("Exit codes:");
+  console.log(`  ${AGENT_EXIT_ALLOW}   allow/sanitize`);
+  console.log(`  ${AGENT_EXIT_REVIEW}  challenge/human_review`);
+  console.log(`  ${AGENT_EXIT_BLOCK}  block/fail/quarantine`);
+  console.log(`  ${AGENT_EXIT_ERROR}   transport/validation error`);
+}
+
 async function createInitialState(): Promise<CliState> {
   const persisted = await loadPersistedConfig();
   const tokenFromEnv = process.env.SERVICE_API_TOKEN?.trim();
@@ -994,6 +1199,104 @@ async function createInitialState(): Promise<CliState> {
     scriptActions: parseScriptActions(process.env.AI_SEC_CLI_SCRIPT),
     clearEnabled: process.env.AI_SEC_CLI_NO_CLEAR !== "1"
   };
+}
+
+async function runAgentCli(rawArgs: string[]): Promise<void> {
+  let options: AgentCliOptions;
+  try {
+    options = parseAgentOptions(rawArgs);
+  } catch (error) {
+    if (error instanceof Error && error.message === "HELP") {
+      printAgentHelp();
+      process.exitCode = AGENT_EXIT_ALLOW;
+      return;
+    }
+
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(JSON.stringify({ status: "error", error: message }));
+    process.exitCode = AGENT_EXIT_ERROR;
+    return;
+  }
+
+  const state = await createInitialState();
+  if (options.baseUrl) {
+    state.baseUrl = options.baseUrl;
+  }
+  if (options.token) {
+    state.token = options.token;
+  }
+  if (options.sessionId) {
+    state.sessionId = options.sessionId;
+  }
+  if (options.userId) {
+    state.userId = options.userId;
+  }
+
+  const promptFromStdin = options.readPromptFromStdin || (!options.prompt && !process.stdin.isTTY);
+  const stdinText = promptFromStdin ? (await readStdinText()).trim() : "";
+  const prompt = (options.prompt ?? stdinText).trim();
+
+  if (!prompt) {
+    console.error(JSON.stringify({ status: "error", error: "Prompt is required. Use --prompt or --stdin." }));
+    process.exitCode = AGENT_EXIT_ERROR;
+    return;
+  }
+
+  const context = options.contexts.map((content, index) => ({
+    source_id: `agent_ctx_${index + 1}`,
+    trust: "unknown",
+    content
+  }));
+
+  try {
+    const result = await requestJsonQuiet<AgentGateResponse>(state, "/v1/agent/gate", {
+      method: "POST",
+      body: JSON.stringify({
+        session_id: state.sessionId,
+        user_id: state.userId,
+        prompt,
+        context,
+        requested_tools: options.requestedTools,
+        user_confirmed_tools: options.userConfirmedTools
+      })
+    });
+
+    const payload = result.payload;
+    const classification = classifyAgentDecision(payload.decision);
+    const output = {
+      status: classification,
+      decision: payload.decision,
+      risk_score: payload.risk_score,
+      challenge_required: payload.challenge_required,
+      blocked_tools: payload.blocked_tools,
+      signals: payload.signals,
+      event_id: payload.event_id
+    };
+
+    console.log(JSON.stringify(output, null, options.pretty ? 2 : undefined));
+
+    if (classification === "allow") {
+      process.exitCode = AGENT_EXIT_ALLOW;
+      return;
+    }
+
+    process.exitCode = classification === "review" ? AGENT_EXIT_REVIEW : AGENT_EXIT_BLOCK;
+  } catch (error) {
+    if (error instanceof HttpError) {
+      console.error(
+        JSON.stringify({
+          status: "error",
+          error: error.message,
+          http_status: error.status,
+          payload: error.payload
+        })
+      );
+    } else {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(JSON.stringify({ status: "error", error: message }));
+    }
+    process.exitCode = AGENT_EXIT_ERROR;
+  }
 }
 
 export async function runCli(): Promise<void> {
@@ -1017,7 +1320,10 @@ export async function runCli(): Promise<void> {
 const isMainModule = process.argv[1] ? path.resolve(process.argv[1]) === fileURLToPath(import.meta.url) : false;
 
 if (isMainModule) {
-  runCli().catch((error) => {
+  const args = process.argv.slice(2);
+  const runner = args[0] === "agent" ? runAgentCli(args.slice(1)) : runCli();
+
+  runner.catch((error) => {
     const message = error instanceof Error ? error.message : String(error);
     console.error(chalk.red(`Fatal error: ${message}`));
     process.exitCode = 1;

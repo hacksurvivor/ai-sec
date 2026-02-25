@@ -13,6 +13,11 @@ thresholds:
   critical_block_floor: 85
 
 high_risk_tools:
+  - terminal.exec
+  - shell.exec
+  - bash.exec
+  - write_file
+  - fs.write
   - send_email
   - send_payment
   - wire_transfer

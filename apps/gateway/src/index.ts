@@ -15,6 +15,7 @@ import { logger } from "./logger.js";
 import { EventStore } from "./eventStore.js";
 import { generateModelResponse } from "./modelProvider.js";
 import {
+  agentGateRequestSchema,
   contextScanRequestSchema,
   listSecurityEventsQuerySchema,
   redTeamRunSchema,
@@ -137,6 +138,74 @@ app.post("/v1/context/scan", async (req, res) => {
       signals: allSignals
     },
     results: chunkResults,
+    event_id: eventId
+  });
+});
+
+app.post("/v1/agent/gate", async (req, res) => {
+  const startedAt = Date.now();
+  const eventId = randomUUID();
+
+  const parsedBody = agentGateRequestSchema.safeParse(req.body);
+  if (!parsedBody.success) {
+    return res.status(400).json({
+      error: "invalid_request",
+      details: parsedBody.error.flatten()
+    });
+  }
+
+  const body = parsedBody.data;
+  const inputScan = scanMany([body.prompt], "input");
+  const contextScan = scanMany(body.context.map((chunk) => chunk.content), "context");
+
+  let policy = evaluatePolicy({
+    input: inputScan,
+    context: contextScan,
+    requestedTools: body.requested_tools
+  });
+
+  const blockedTools: string[] = [];
+  for (const toolName of body.requested_tools) {
+    const confirmed = body.user_confirmed_tools.includes(toolName);
+    const toolGate = guardToolCall(toolName, confirmed);
+    if (!toolGate.allowed) {
+      blockedTools.push(toolName);
+    }
+  }
+
+  if (blockedTools.length > 0 && policy.decision !== "block") {
+    policy = {
+      decision: "human_review",
+      riskScore: Math.max(policy.riskScore, 60),
+      reasons: ["One or more requested tools require explicit confirmation"]
+    };
+  }
+
+  const allSignals = [...inputScan.signals, ...contextScan.signals];
+  const latencyMs = Date.now() - startedAt;
+
+  await eventStore.write({
+    eventId,
+    eventType: "agent_gate",
+    sessionId: body.session_id,
+    userId: body.user_id,
+    riskScore: policy.riskScore,
+    decision: policy.decision,
+    signals: allSignals.map((signal) => signal.id),
+    blockedTools,
+    latencyMs,
+    payload: {
+      reasons: policy.reasons,
+      metadata: body.metadata ?? {}
+    }
+  });
+
+  return res.json({
+    decision: policy.decision,
+    risk_score: policy.riskScore,
+    signals: allSignals.map((signal) => signal.id),
+    blocked_tools: blockedTools,
+    challenge_required: policy.decision === "challenge" || policy.decision === "human_review",
     event_id: eventId
   });
 });

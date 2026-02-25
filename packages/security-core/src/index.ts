@@ -187,6 +187,11 @@ const DEFAULT_RULES: PatternRule[] = [
 ];
 
 const DEFAULT_HIGH_RISK_TOOLS = [
+  "terminal.exec",
+  "shell.exec",
+  "bash.exec",
+  "write_file",
+  "fs.write",
   "send_email",
   "send_payment",
   "wire_transfer",
