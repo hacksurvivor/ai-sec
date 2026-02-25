@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI-Sec Agent Guard"
+  short_description: "Preflight prompts and tool calls with ai-sec"
+  default_prompt: "Gate this request with ai-sec before executing any tool calls."

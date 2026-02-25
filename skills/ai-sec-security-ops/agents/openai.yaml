@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI-Sec Security Ops"
+  short_description: "Run health checks, red-team, and event triage"
+  default_prompt: "Run ai-sec security operations and summarize findings."
