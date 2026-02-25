@@ -1,12 +1,18 @@
 # OpenClaw Adapter
 
-`@ai-sec/openclaw-adapter` provides an OpenClaw-friendly integration layer for `/v1/agent/gate`.
+`@codegrammer/ai-sec-openclaw-adapter` provides an OpenClaw-friendly integration layer for `/v1/agent/gate`.
 
 ## Why use it
 
 - Guard prompts and tool calls before execution.
 - Keep autonomous behavior by default (`reviewMode: "autonomous"`).
 - Optionally enforce human approval (`reviewMode: "human_approval"`).
+
+## Install
+
+```bash
+npm install @codegrammer/ai-sec-openclaw-adapter
+```
 
 ## Core behavior
 
@@ -19,7 +25,7 @@
 ## Minimal usage
 
 ```ts
-import { OpenClawAiSecAdapter } from "@ai-sec/openclaw-adapter";
+import { OpenClawAiSecAdapter } from "@codegrammer/ai-sec-openclaw-adapter";
 
 const guard = new OpenClawAiSecAdapter({
   baseUrl: "http://127.0.0.1:8080",

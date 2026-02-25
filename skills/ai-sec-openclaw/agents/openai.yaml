@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI-Sec OpenClaw"
+  short_description: "Scaffold ai-sec protection for OpenClaw bots"
+  default_prompt: "Integrate ai-sec into my OpenClaw bot with autonomous-by-default gating."

@@ -33,7 +33,10 @@ jobs:
         run: npm run test --workspace @ai-sec/gateway
 
       - name: Run CLI flow tests
-        run: npm run test --workspace @ai-sec/cli
+        run: npm run test --workspace @codegrammer/ai-sec-cli
+
+      - name: Run OpenClaw adapter tests
+        run: npm run test --workspace @codegrammer/ai-sec-openclaw-adapter
 
       - name: Run red-team suite gate
         run: npm run redteam -- --suite prompt_injection_core --minDetectionRate 0.9 --maxSuccessfulAttacks 3 --json

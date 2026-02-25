@@ -5,7 +5,7 @@ Monorepo for a keyless-by-default LLM security stack:
 - `@ai-sec/gateway`: API security gateway for LLM traffic.
 - `@ai-sec/security-core`: scanning, policy, and sanitization engine.
 - `@ai-sec/redteam-runner`: adversarial regression suite.
-- `@ai-sec/openclaw-adapter`: OpenClaw-friendly guard with autonomous-by-default review handling.
+- `@codegrammer/ai-sec-openclaw-adapter`: OpenClaw-friendly guard with autonomous-by-default review handling.
 - `@codegrammer/ai-sec-cli`: interactive terminal operator console (arrow keys, ASCII UI, low typing).
 
 ## What It's For
@@ -229,7 +229,7 @@ Integration docs:
 
 ## OpenClaw integration
 
-`@ai-sec/openclaw-adapter` enables direct OpenClaw bot integration with optional human approval.
+`@codegrammer/ai-sec-openclaw-adapter` enables direct OpenClaw bot integration with optional human approval.
 
 Default behavior is autonomous:
 
@@ -239,7 +239,7 @@ Default behavior is autonomous:
 Example adapter usage:
 
 ```ts
-import { OpenClawAiSecAdapter } from "@ai-sec/openclaw-adapter";
+import { OpenClawAiSecAdapter } from "@codegrammer/ai-sec-openclaw-adapter";
 
 const guard = new OpenClawAiSecAdapter({
   baseUrl: process.env.AI_SEC_GATEWAY_URL ?? "http://127.0.0.1:8080",
@@ -269,15 +269,17 @@ This repo includes installable skills to make ai-sec usage easier for coding age
 - `skills/ai-sec-gatekeeper`: preflight prompt/tool gating.
 - `skills/ai-sec-bootstrap`: install Claude/Codex integrations.
 - `skills/ai-sec-ops-center`: health checks, red-team runs, event triage.
+- `skills/ai-sec-openclaw`: scaffold OpenClaw ai-sec middleware.
 
-Install all 3 skills into Codex:
+Install all 4 skills into Codex:
 
 ```bash
 python "$HOME/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py" \
   --repo hacksurvivor/ai-sec \
   --path skills/ai-sec-gatekeeper \
   --path skills/ai-sec-bootstrap \
-  --path skills/ai-sec-ops-center
+  --path skills/ai-sec-ops-center \
+  --path skills/ai-sec-openclaw
 ```
 
 After install, restart Codex to load new skills.
@@ -346,6 +348,12 @@ CLI scripted flow tests:
 
 ```bash
 npm run test --workspace @codegrammer/ai-sec-cli
+```
+
+OpenClaw adapter tests:
+
+```bash
+npm run test --workspace @codegrammer/ai-sec-openclaw-adapter
 ```
 
 Red-team gate:

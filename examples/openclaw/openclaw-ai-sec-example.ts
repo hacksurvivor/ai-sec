@@ -1,4 +1,4 @@
-import { OpenClawAiSecAdapter } from "@ai-sec/openclaw-adapter";
+import { OpenClawAiSecAdapter } from "@codegrammer/ai-sec-openclaw-adapter";
 
 const guard = new OpenClawAiSecAdapter({
   baseUrl: process.env.AI_SEC_GATEWAY_URL ?? "http://127.0.0.1:8080",

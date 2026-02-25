@@ -30,7 +30,7 @@ jobs:
         run: npm run release:verify
 
       - name: Build release artifacts
-        run: npm run release:cli:pack && npm run release:cli:checksums
+        run: npm run release:cli:pack && npm run release:adapter:pack && npm run release:cli:checksums
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
