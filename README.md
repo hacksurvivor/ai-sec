@@ -156,6 +156,7 @@ Integration docs:
 - `examples/integrations/README.md`
 - `examples/integrations/claude/README.md`
 - `examples/integrations/codex/README.md`
+- `docs/SMOKE_DEMO.md` (live run transcript)
 
 ## Auth model (hardened default)
 
@@ -168,6 +169,28 @@ Roles:
 - `ingest`: context scan + secure-chat + agent gate calls.
 - `analyst`: ingest + security event browsing.
 - `admin`: analyst-level access (reserved for stricter admin routes later).
+
+## Security model for agent integrations
+
+- Gateway policy verdicts are authoritative: `allow`, `sanitize`, `human_review`, `challenge`, `block`.
+- Agent integration exit codes map to control flow:
+  - `0` = proceed
+  - `20` = pause for human approval
+  - `30` = deny execution
+- Claude hook behavior:
+  - `UserPromptSubmit`: blocks prompt submission on `human_review/challenge/block`.
+  - `PreToolUse`: returns `ask` or `deny` to Claude hook runtime.
+  - Set `AI_SEC_FAIL_CLOSED=1` to deny when gateway is unreachable.
+- Codex integration behavior:
+  - Uses `codex-ai-sec` wrapper to gate before `codex exec`.
+  - Codex currently has no native pre-tool hook key in `config.toml`, so enforcement is wrapper-based.
+- Token precedence for integrations:
+  - `AI_SEC_BEARER_TOKEN` first, then `SERVICE_API_TOKEN`.
+  - In `AUTH_MODE=required`, invalid token returns `401` even if gateway is otherwise healthy.
+
+## Live smoke demo
+
+Smoke transcript with real command output is in `docs/SMOKE_DEMO.md`.
 
 ## Endpoints
 
