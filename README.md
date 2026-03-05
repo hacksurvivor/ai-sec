@@ -8,6 +8,26 @@ Monorepo for a keyless-by-default LLM security stack:
 - `@codegrammer/ai-sec-openclaw-adapter`: OpenClaw-friendly guard with autonomous-by-default review handling.
 - `@codegrammer/ai-sec-cli`: interactive terminal operator console (arrow keys, ASCII UI, low typing).
 
+
+## Problem
+
+Teams running coding agents need a fail-closed security layer between prompts and tool execution.
+Without deterministic policy checks, prompt injection and unsafe command/tool flows can leak data or execute risky actions.
+
+## Architecture
+
+- `@ai-sec/gateway`: policy decision API for agent requests.
+- `@ai-sec/security-core`: shared scanning, policy, and sanitization engine.
+- `@ai-sec/redteam-runner`: adversarial regression suite for repeatable checks.
+- `@codegrammer/ai-sec-openclaw-adapter`: OpenClaw-compatible guard integration.
+- `@codegrammer/ai-sec-cli`: operator console for review/challenge/approve workflows.
+
+## Outcomes
+
+- Deterministic `allow` / `review` / `block` decisions for agent tool calls.
+- Reproducible policy validation through API + CLI flows.
+- Faster human-in-the-loop review for high-risk agent actions.
+
 ## What It's For
 
 `ai-sec` is a security control layer for coding agents.
