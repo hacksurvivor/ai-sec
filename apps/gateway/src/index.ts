@@ -166,8 +166,7 @@ app.post("/v1/agent/gate", async (req, res) => {
 
   const blockedTools: string[] = [];
   for (const toolName of body.requested_tools) {
-    const confirmed = body.user_confirmed_tools.includes(toolName);
-    const toolGate = guardToolCall(toolName, confirmed);
+    const toolGate = guardToolCall(toolName, false);
     if (!toolGate.allowed) {
       blockedTools.push(toolName);
     }
@@ -265,8 +264,7 @@ app.post("/v1/secure-chat", async (req, res) => {
 
   const blockedTools: string[] = [];
   for (const toolName of body.requested_tools) {
-    const confirmed = body.user_confirmed_tools.includes(toolName);
-    const toolGate = guardToolCall(toolName, confirmed);
+    const toolGate = guardToolCall(toolName, false);
     if (!toolGate.allowed) {
       blockedTools.push(toolName);
     }

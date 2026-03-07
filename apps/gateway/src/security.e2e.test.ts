@@ -237,7 +237,8 @@ describe("Gateway security decisions", () => {
       requested_tools: ["terminal.exec"],
       user_confirmed_tools: ["terminal.exec"]
     });
-    assert.notEqual(confirmedTool.decision, "human_review");
+    assert.equal(confirmedTool.decision, "human_review");
+    assert.ok(confirmedTool.blocked_tools.includes("terminal.exec"));
   });
 
   it("scans context chunks and quarantines risky chunks", async () => {
