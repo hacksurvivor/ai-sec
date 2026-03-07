@@ -190,6 +190,58 @@ test("human approval mode can re-gate with confirmed tools", async () => {
   );
 });
 
+
+test("human approval mode honors reviewer-confirmed subset of tools", async () => {
+  await withGateway(
+    async (request) => {
+      const confirmedTools = Array.isArray(request.body.user_confirmed_tools)
+        ? (request.body.user_confirmed_tools as string[])
+        : [];
+
+      if (confirmedTools.length === 1 && confirmedTools[0] === "web.fetch") {
+        return {
+          body: gatewayDecision({
+            decision: "allow",
+            risk_score: 8,
+            blocked_tools: []
+          })
+        };
+      }
+
+      return {
+        body: gatewayDecision({
+          decision: "human_review",
+          risk_score: 75,
+          blocked_tools: ["terminal.exec", "web.fetch"],
+          challenge_required: true
+        })
+      };
+    },
+    async (baseUrl, requests) => {
+      const adapter = new OpenClawAiSecAdapter({
+        baseUrl,
+        reviewMode: "human_approval"
+      });
+
+      const result = await adapter.gate(
+        {
+          prompt: "Fetch a URL and run a command",
+          tools: ["web.fetch", "terminal.exec"]
+        },
+        async () => ({ approved: true, confirmedTools: ["web.fetch"] })
+      );
+
+      assert.equal(result.gatewayStatus, "allow");
+      assert.equal(result.effectiveStatus, "allow");
+      assert.equal(result.allowed, true);
+      assert.equal(result.exitCode, 0);
+      assert.equal(requests.length, 2);
+      assert.deepEqual(requests[1]?.body.user_confirmed_tools, ["web.fetch"]);
+    }
+  );
+});
+
+
 test("execution firewall blocks dangerous terminal command even when gateway allows", async () => {
   await withGateway(
     async () => ({
