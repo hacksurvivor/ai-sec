@@ -599,10 +599,10 @@ export class OpenClawAiSecAdapter {
 
     const requestedTools = this.normalizeTools(input.tools ?? []);
     const approvedTools = this.normalizeTools(approval.confirmedTools ?? []);
+    const confirmedByReviewer = approvedTools.length > 0 ? approvedTools : requestedTools;
     const confirmedTools = dedupe([
       ...this.normalizeTools(input.confirmedTools ?? []),
-      ...approvedTools,
-      ...requestedTools
+      ...confirmedByReviewer
     ]);
 
     const second = await this.gateOnce(input, confirmedTools);
