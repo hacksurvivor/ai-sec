@@ -154,6 +154,11 @@ const AGENT_EXIT_ALLOW = 0;
 const AGENT_EXIT_ERROR = 1;
 const AGENT_EXIT_REVIEW = 20;
 const AGENT_EXIT_BLOCK = 30;
+const REDTEAM_SUITES = [
+  { name: "Prompt injection core (baseline)", value: "prompt_injection_core" },
+  { name: "Elder Plinius patterns (jailbreak/leak variants)", value: "elder_plinius" }
+] as const;
+type RedteamSuite = (typeof REDTEAM_SUITES)[number]["value"];
 
 function normalizeBaseUrl(value: string): string {
   return value.trim().replace(/\/+$/, "");
@@ -168,6 +173,10 @@ function parseScriptActions(raw: string | undefined): string[] {
     .split(",")
     .map((part) => part.trim())
     .filter((part) => part.length > 0);
+}
+
+function isRedteamSuite(value: string): value is RedteamSuite {
+  return REDTEAM_SUITES.some((suite) => suite.value === value);
 }
 
 function maskToken(token: string | undefined): string {
@@ -666,16 +675,34 @@ async function runContextScan(state: CliState, forcedScenario?: string): Promise
   await waitForContinue(state);
 }
 
-async function runRedteam(state: CliState): Promise<void> {
+async function runRedteam(state: CliState, requestedSuite?: string): Promise<void> {
+  let selectedSuite: RedteamSuite = "prompt_injection_core";
+
+  if (requestedSuite) {
+    if (!isRedteamSuite(requestedSuite)) {
+      console.log(chalk.yellow(`Unknown red-team suite: ${requestedSuite}`));
+      console.log(chalk.gray(`Supported suites: ${REDTEAM_SUITES.map((suite) => suite.value).join(", ")}`));
+      await waitForContinue(state);
+      return;
+    }
+    selectedSuite = requestedSuite;
+  } else if (!isScripted(state)) {
+    selectedSuite = await select<RedteamSuite>({
+      message: "Pick a red-team suite",
+      choices: REDTEAM_SUITES.map((suite) => ({ name: suite.name, value: suite.value })),
+      pageSize: 8
+    });
+  }
+
   printSection("Red-Team Run");
 
   await withRecovery(state, "redteam_run", async () => {
     const result = await requestJson<RedteamResponse>(state, "/v1/redteam/run", {
       method: "POST",
-      spinnerText: "Executing prompt_injection_core suite",
+      spinnerText: `Executing ${selectedSuite} suite`,
       allowedStatuses: [409],
       body: JSON.stringify({
-        suite: "prompt_injection_core",
+        suite: selectedSuite,
         target_model: "gpt-4.1-mini",
         fail_threshold: {
           max_successful_attacks: 0,
@@ -685,6 +712,7 @@ async function runRedteam(state: CliState): Promise<void> {
     });
 
     const payload = result.payload;
+    console.log(`Suite              : ${selectedSuite}`);
     console.log(`Run ID             : ${payload.run_id}`);
     console.log(`Status             : ${colorDecision(payload.status)}`);
     console.log(`Detection rate     : ${payload.detection_rate}`);
@@ -986,6 +1014,11 @@ async function executeAction(state: CliState, action: string): Promise<boolean> 
 
   if (action.startsWith("context:")) {
     await runContextScan(state, action.slice("context:".length));
+    return true;
+  }
+
+  if (action.startsWith("redteam:")) {
+    await runRedteam(state, action.slice("redteam:".length));
     return true;
   }
 

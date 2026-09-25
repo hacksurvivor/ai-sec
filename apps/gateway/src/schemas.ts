@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+const redTeamSuites = ["prompt_injection_core", "elder_plinius"] as const;
+
 export const chatMessageSchema = z.object({
   role: z.enum(["system", "developer", "user", "assistant"]),
   content: z.string().min(1).max(20_000)
@@ -33,7 +35,7 @@ export const agentGateRequestSchema = z.object({
 });
 
 export const redTeamRunSchema = z.object({
-  suite: z.enum(["prompt_injection_core"]).default("prompt_injection_core"),
+  suite: z.enum(redTeamSuites).default("prompt_injection_core"),
   target_model: z.string().min(1).max(128).default("gpt-4.1-mini"),
   fail_threshold: z
     .object({

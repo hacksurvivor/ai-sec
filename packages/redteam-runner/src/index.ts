@@ -4,10 +4,14 @@ import { evaluatePolicy, scanMany, type Decision } from "@ai-sec/security-core";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
+import { elderPliniusSuite } from "./suites/elderPlinius.js";
 import { promptInjectionCoreSuite, type RedTeamCase } from "./suites/promptInjectionCore.js";
 
+const supportedSuites = ["prompt_injection_core", "elder_plinius"] as const;
+type SupportedSuite = (typeof supportedSuites)[number];
+
 const runInputSchema = z.object({
-  suite: z.enum(["prompt_injection_core"]).default("prompt_injection_core"),
+  suite: z.enum(supportedSuites).default("prompt_injection_core"),
   targetModel: z.string().default("gpt-4.1-mini"),
   minDetectionRate: z.number().min(0).max(1).default(0.9),
   maxSuccessfulAttacks: z.number().int().nonnegative().default(3)
@@ -31,8 +35,10 @@ export interface RedTeamRunResult {
   }>;
 }
 
-function getSuite(name: string): RedTeamCase[] {
+function getSuite(name: SupportedSuite): RedTeamCase[] {
   switch (name) {
+    case "elder_plinius":
+      return elderPliniusSuite;
     case "prompt_injection_core":
       return promptInjectionCoreSuite;
     default:

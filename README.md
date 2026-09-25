@@ -3,6 +3,7 @@
 Monorepo for a keyless-by-default LLM security stack:
 
 - `@ai-sec/gateway`: API security gateway for LLM traffic.
+- `@ai-sec/auth-service`: privacy-first auth server with pairwise subject IDs and rotating refresh tokens.
 - `@ai-sec/security-core`: scanning, policy, and sanitization engine.
 - `@ai-sec/redteam-runner`: adversarial regression suite.
 - `@codegrammer/ai-sec-openclaw-adapter`: OpenClaw-friendly guard with autonomous-by-default review handling.
@@ -95,6 +96,40 @@ AUTH_MODE=required \
 SERVICE_API_TOKENS="token-admin:admin,token-analyst:analyst,token-ingest:ingest" \
 npm run start
 ```
+
+Run auth service:
+
+```bash
+AUTH_PORT=8090 \
+ACCESS_TOKEN_SECRET="replace-with-strong-secret-32-chars-min" \
+REFRESH_TOKEN_PEPPER="replace-with-strong-secret-32-chars-min" \
+PAIRWISE_SUBJECT_SECRET="replace-with-strong-secret-32-chars-min" \
+PII_LOG_SALT="replace-with-strong-secret-32-chars-min" \
+npm run start:auth
+```
+
+Auth API quick check:
+
+```bash
+curl -s http://127.0.0.1:8090/v1/auth/register \
+  -H 'content-type: application/json' \
+  -d '{
+    "email":"alice@example.com",
+    "password":"StrongPassword!123",
+    "client_id":"web-app",
+    "audience":"ai-sec-gateway"
+  }'
+```
+
+`register`, `login`, and `refresh` responses include:
+
+- `access_token`: short-lived JWT (`HS256`)
+- `refresh_token`: opaque rotating token with reuse detection
+- `subject`: pairwise pseudonymous subject id (`sub`) scoped by audience
+
+Design notes and hardening roadmap:
+
+- `docs/AUTH_PRIVACY_MODEL.md`
 
 Run CLI in another terminal:
 
@@ -402,6 +437,7 @@ Red-team gate:
 
 ```bash
 npm run redteam -- --suite prompt_injection_core --target-model mock-model
+npm run redteam -- --suite elder_plinius --target-model mock-model
 ```
 
 ## Infrastructure

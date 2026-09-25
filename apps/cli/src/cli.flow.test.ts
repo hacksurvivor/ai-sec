@@ -265,6 +265,19 @@ describe("CLI scripted flows", () => {
     assert.ok(!/Fatal error/i.test(result.stderr));
   });
 
+  it("supports selecting elder_plinius suite in scripted mode", async () => {
+    secureChatRequiresAuth = false;
+    const result = await runCliScripted({
+      script: "redteam:elder_plinius,exit",
+      baseUrl,
+      homeDir
+    });
+
+    assert.equal(result.code, 0);
+    assert.match(result.stdout, /Suite\s+: elder_plinius/);
+    assert.ok(!/Unknown action: redteam:elder_plinius/.test(result.stdout));
+  });
+
   it("recovers gracefully from 401 responses in scripted mode", async () => {
     secureChatRequiresAuth = true;
 

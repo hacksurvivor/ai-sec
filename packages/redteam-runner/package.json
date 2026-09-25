@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "redteam": "node dist/index.js",
-    "test": "node --test dist/*.test.js 2>/dev/null || echo 'no tests'",
+    "test": "npm run build && node --test dist/*.test.js",
     "lint": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
