@@ -1,0 +1,39 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-3.0",
+  "@type": "SoftwareSourceCode",
+  "identifier": "ai-sec",
+  "name": "ai-sec: AI Security Gateway and Operator CLI",
+  "description": "A keyless-by-default security gateway, policy engine, red-team runner and operator CLI for inspecting prompts, retrieved context and tool requests in AI-agent workflows.",
+  "version": "0.1.0",
+  "codeRepository": "https://github.com/hacksurvivor/ai-sec",
+  "issueTracker": "https://github.com/hacksurvivor/ai-sec/issues",
+  "runtimePlatform": "Node.js >=22",
+  "programmingLanguage": "TypeScript",
+  "developmentStatus": "active",
+  "keywords": [
+    "AI agents",
+    "LLM security",
+    "prompt injection",
+    "tool-call security",
+    "human approval",
+    "red-team testing"
+  ],
+  "author": {
+    "@type": "Person",
+    "@id": "https://rflxai.com/founder/sergey-moloman#person",
+    "name": "Sergey Moloman",
+    "url": "https://rflxai.com/founder/sergey-moloman",
+    "sameAs": [
+      "https://github.com/hacksurvivor",
+      "https://www.linkedin.com/in/sergey-moloman/"
+    ],
+    "affiliation": {
+      "@type": "Organization",
+      "name": "RFLX AI",
+      "url": "https://rflxai.com/"
+    }
+  },
+  "maintainer": {
+    "@id": "https://rflxai.com/founder/sergey-moloman#person"
+  }
+}

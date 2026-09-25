@@ -440,6 +440,17 @@ CI release automation:
 - push tag `v*` to trigger `.github/workflows/release.yml`
 - artifacts are uploaded and attached to GitHub Release
 
+## Maintainer and citation
+
+`ai-sec` is maintained by [Sergey Moloman](https://rflxai.com/founder/sergey-moloman),
+an independent B2B AI integration contractor and founder of RFLX AI. The
+repository is public implementation evidence for production agent controls,
+human-approval boundaries, decision receipts and red-team regression testing;
+it is not a claim of security certification.
+
+Machine-readable authorship is available in [`CITATION.cff`](CITATION.cff) and
+[`codemeta.json`](codemeta.json).
+
 ## Security and disclosure
 
 - See `SECURITY.md` for vulnerability reporting policy.

@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use ai-sec in published work, cite the software and its maintainer."
+title: "ai-sec: AI Security Gateway and Operator CLI"
+type: software
+authors:
+  - family-names: Moloman
+    given-names: Sergey
+    alias: hacksurvivor
+    website: "https://rflxai.com/founder/sergey-moloman"
+repository-code: "https://github.com/hacksurvivor/ai-sec"
+url: "https://github.com/hacksurvivor/ai-sec"
+version: 0.1.0
+abstract: >-
+  A keyless-by-default security gateway, policy engine, red-team runner and
+  operator CLI for inspecting prompts, retrieved context and tool requests in
+  AI-agent workflows.
+keywords:
+  - AI agents
+  - LLM security
+  - prompt injection
+  - tool-call security
+  - human approval
+  - red-team testing
