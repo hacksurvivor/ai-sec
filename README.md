@@ -464,3 +464,7 @@ CI release automation:
 
 - See `SECURITY.md` for vulnerability reporting policy.
 - Use `OPEN_SOURCE_CHECKLIST.md` before each public release.
+
+## Author
+
+Made by [Sergey Moloman](https://moloman.dev), AI product engineer.
